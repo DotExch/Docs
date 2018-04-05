@@ -1,0 +1,89 @@
+IdStorageType (byte):
+    MailboxItemSmtpAddressBased = 0,
+    PublicFolder = 1,
+    PublicFolderItem = 2,
+    MailboxItemMailboxGuidBased = 3,
+    ConversationIdMailboxGuidBased = 4,
+    ActiveDirectoryObject = 5,
+    MailboxItemMailboxGuidBasedWithFallback = 6
+
+CompressionId (byte):
+    NoCompression = 0,
+    RleCompression = 1
+
+IdProcessingInstruction (byte):
+    Normal = 0,
+    Recurrence = 1,
+    Series = 2,
+    Multiple = 3
+    
+RLE compression:
+    If two bytes following each other are distinct then the first byte is verbatim
+    If they are equal then the byte following contains count - 2,
+        i.e. if buf[i] == buf[i+1] then output buf[i] c+2 times where c = buf[i+2].
+        (or output buf[i] and buf[i+1] are printed verbatim, then buf[i] is printed
+            buf[i+2] more times and buf[i+2] is then skipped)
+    
+Base64 encoded EwsId:
+0       CompressionId               compression id
+1-...   <payload (max length 1024)>
+
+Decompressed payload:
+0       IdStorageType               storage type
+1-...   <storage specific content>
+
+CountedContent:
+0       Int16                       len
+1-len   <content>
+
+DateTime: .NET datetime, 2 bits Kind, 62 bits 100-nanosecond ticks since 01-01-01 0:00:00 UTC
+
+Moniker: CountedContent
+Email moniker: Moniker with UTF8 encoded string, max length 1000
+Guid moniker: Moniker with Guid as "D" format ascii string, max length 50
+
+InternetMessageId: CountedContent with UTF-8 string
+StoreId: CountedContent, dependent on IdProcessingInstruction
+    case Multiple:
+        CountedContent+
+        (Conversion to StoreObjectId uses first content as ENTRYID)
+    case Normal, Series:
+        ENTRYID
+    default: (Recurrence or unknown)
+        if last byte == 16:
+            OccurenceStoreObjectId
+        else:
+            ENTRYID
+    
+OccurenceStoreObjectId:
+0       byte                        value: 8
+1-8     DateTime big endian         OccurenceDate
+9       ENTRYID
+
+MailboxItemSmtpAddressBased storage content:
+        Email moniker               MailboxId
+        IdProcessingInstruction     IdProcessingInstruction
+        StoreId                     StoreId
+
+MailboxItemMailboxGuidBased, ConversationIdMailboxGuidBased storage content:
+        Guid moniker                MailboxId
+        IdProcessingInstruction     IdProcessingInstruction
+        StoreId                     StoreId
+
+MailboxItemMailboxGuidBasedWithFallback storage content:
+        Guid moniker                MailboxId
+        IdProcessingInstruction     IdProcessingInstruction
+        StoreId                     StoreId
+        InternetMessageId           InternetMessageId
+        
+PublicFolder, ActiveDirectoryObject storage content:
+        StoreId                     StoreId
+        
+PublicFolderItem storage content:
+        IdProcessingInstruction     IdProcessingInstruction
+        StoreId                     StoreId
+        StoreId                     FolderId
+        
+Id types:
+    EntryId.length == 46: FolderId
+    EntryId.length == 70: MessageId
