@@ -4,8 +4,8 @@ IdStorageType (byte):
     PublicFolderItem = 2,
     MailboxItemMailboxGuidBased = 3,
     ConversationIdMailboxGuidBased = 4,
-    ActiveDirectoryObject = 5,
-    MailboxItemMailboxGuidBasedWithFallback = 6
+    ActiveDirectoryObject = 5, // Exchange 2013
+    MailboxItemMailboxGuidBasedWithFallback = 6 // Exchange 2016
 
 CompressionId (byte):
     NoCompression = 0,
