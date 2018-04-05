@@ -1,5 +1,5 @@
 IdStorageType (byte):
-    MailboxItemSmtpAddressBased = 0,
+    MailboxItemSmtpAddressBased = 0, // Exchange 2007 (EwsLegacyId)
     PublicFolder = 1,
     PublicFolderItem = 2,
     MailboxItemMailboxGuidBased = 3,
@@ -76,8 +76,11 @@ MailboxItemMailboxGuidBasedWithFallback storage content:
         StoreId                     StoreId
         InternetMessageId           InternetMessageId
         
-PublicFolder, ActiveDirectoryObject storage content:
+PublicFolder storage content:
         StoreId                     StoreId
+
+ActiveDirectoryObject:
+        CountedContent<Guid>        ADObjectId
         
 PublicFolderItem storage content:
         IdProcessingInstruction     IdProcessingInstruction
