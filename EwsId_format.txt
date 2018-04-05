@@ -90,3 +90,4 @@ PublicFolderItem storage content:
 Id types:
     EntryId.length == 46: FolderId
     EntryId.length == 70: MessageId
+    (EWS validates that the EntryId has one of these length)
